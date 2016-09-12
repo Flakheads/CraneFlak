@@ -1,0 +1,8 @@
+# Ignore brain-flak programs
+*.txt
+*.bf
+
+#Ignore object files and the binary
+*.o
+craneflak
+
