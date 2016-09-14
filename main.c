@@ -28,7 +28,7 @@ void print_help_string(char* prog) {
 int main(int argc, char* argv[]) {
 	FILE* source, *args;
 	uint8_t ascii_in = 0, ascii_out = 0;
-	int argind, i;
+	int i;
 	long arg;
 	char c, *arg_file = NULL, *program = NULL, **check;
 	data_stack* arg_stack;
@@ -63,7 +63,6 @@ int main(int argc, char* argv[]) {
 				return 1;
 		}
 	}
-	argind = optind;
 	if (program != NULL) {
 		source = fmemopen(program, strlen(program), "r");
 	} else if (optind == argc) {
