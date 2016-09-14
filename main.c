@@ -1,5 +1,7 @@
+#include <errno.h>
 #include <inttypes.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 
 void print_help_string(char* prog) {
@@ -21,7 +23,9 @@ void print_help_string(char* prog) {
 }
 
 int main(int argc, char* argv[]) {
+	FILE* source, args;
 	uint8_t ascii_in = 0, ascii_out = 0;
+	unsigned argind;
 	char c, *arg_file = NULL, *program = NULL;
 	while ((c = getopt(argc, argv, "+aAcef:hv")) != -1) {
 		switch (c) {
@@ -53,6 +57,25 @@ int main(int argc, char* argv[]) {
 				fprintf(stderr, "Try '%s -h' for more information.\n", argv[0]);
 				return 1;
 		}
+	}
+	argind = optind;
+	if (program != NULL) {
+		source = fmemopen(program, strlen(program), "r");
+	} else if (optind == argc) {
+		source = stdin;
+	} else {
+		source = fopen(argv[optind], "r");
+		if (source == NULL) {
+			fprintf(stderr, "%s: %s -- %s", argv[0], strerror(errno), argv[optind]);
+			return errno;
+		}
+		++optind;
+	}
+
+	// Stuff
+
+	if (source != stdin) {
+		fclose(source);
 	}
 	return 0;
 }
