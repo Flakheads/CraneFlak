@@ -13,4 +13,4 @@ data_stack* data_stack_reverse(data_stack* stack);
 
 void data_stack_free(data_stack* stack);
 
-#endif // ifndef __stack_h_
+#endif//ifndef __stack_h_
