@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
 	uint8_t ascii_in = 0, ascii_out = 0;
 	int i;
 	long arg;
-	char c, *arg_file = NULL, *program = NULL, **check;
+	char c, *arg_file = NULL, *program = NULL, *check;
 	data_stack* arg_stack;
 	while ((c = getopt(argc, argv, "+aAcef:hv")) != -1) {
 		switch (c) {
@@ -79,8 +79,8 @@ int main(int argc, char* argv[]) {
 		//arg_stack = read_args_from_file(arg_file);
 	} else {
 		for (i = argc - 1; i >= optind; --i) {
-			arg = strtol(argv[i], check, 0);
-			if (**check != '\0') {
+			arg = strtol(argv[i], &check, 0);
+			if (*check != '\0') {
 				fprintf(stderr, "%s: invalid integer argument -- '%s'\n", argv[0], argv[i]);
 				if (source != stdin) fclose(source);
 				return 1;
