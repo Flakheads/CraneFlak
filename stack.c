@@ -3,12 +3,11 @@
 #include <stdlib.h>
 
 typedef struct data_stack {
-	unsigned height;
-	long value;
+	long long height, value;
 	struct data_stack* next;
 } data_stack;
 
-data_stack* data_stack_push(data_stack* stack, long value) {
+data_stack* data_stack_push(data_stack* stack, long long value) {
 	data_stack* new_top = (data_stack*) malloc(sizeof(data_stack));
 	new_top->height = stack ? stack->height + 1 : 1;
 	new_top->value = value;
@@ -16,7 +15,7 @@ data_stack* data_stack_push(data_stack* stack, long value) {
 	return new_top;
 }
 
-long data_stack_peek(data_stack* stack) {
+long long data_stack_peek(data_stack* stack) {
 	return stack ? stack->value : 0;
 }
 

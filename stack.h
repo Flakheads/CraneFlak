@@ -3,9 +3,9 @@
 
 typedef struct data_stack data_stack;
 
-data_stack* data_stack_push(data_stack* stack, long value);
+data_stack* data_stack_push(data_stack* stack, long long value);
 
-long data_stack_peek(data_stack* stack);
+long long data_stack_peek(data_stack* stack);
 
 data_stack* data_stack_pop(data_stack* stack);
 

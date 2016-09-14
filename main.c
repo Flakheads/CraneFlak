@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
 	uint8_t ascii_in = 0, ascii_out = 0;
 	int i;
 	unsigned j;
-	long arg;
+	long long arg;
 	char c, *arg_file = NULL, *program = NULL, *check;
 	data_stack* arg_stack;
 	while ((c = getopt(argc, argv, "+aAcef:hv")) != -1) {
@@ -86,14 +86,14 @@ int main(int argc, char* argv[]) {
 		if (ascii_in) {
 			fseek(args, 0L, SEEK_END);
 			while (fseek(args, -1L, SEEK_CUR) == 0) {
-				arg = (long) fgetc(args);
+				arg = (long long) fgetc(args);
 				arg_stack = data_stack_push(arg_stack, arg);
 			}
 			// fseek sets errno to EINVAL when the offset would go negative
 			errno = 0;
 		} else {
 			while (!feof(args)) {
-				if (!fscanf(args, " %li ", &arg)) {
+				if (!fscanf(args, " %lli ", &arg)) {
 					fprintf(stderr, "%s: invalid integer argument in argument file -- %s\n", argv[0], arg_file);
 					fclose(args);
 					if (source != stdin) fclose(source);
@@ -108,9 +108,9 @@ int main(int argc, char* argv[]) {
 		for (i = argc - 1; i >= optind; --i) {
 			if (ascii_in) {
 				for (j = strlen(argv[i]); j > 0; --j) {
-					arg_stack = data_stack_push(arg_stack, (long) argv[i][j]);
+					arg_stack = data_stack_push(arg_stack, (long long) argv[i][j]);
 				}
-				if (i != optind) arg_stack = data_stack_push(arg_stack, (long) ' ');
+				if (i != optind) arg_stack = data_stack_push(arg_stack, (long long) ' ');
 			} else {
 				arg = strtol(argv[i], &check, 0);
 				if (*check != '\0') {
