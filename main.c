@@ -29,6 +29,7 @@ int main(int argc, char* argv[]) {
 	FILE* source, *args;
 	uint8_t ascii_in = 0, ascii_out = 0;
 	int i;
+	unsigned j;
 	long arg;
 	char c, *arg_file = NULL, *program = NULL, *check;
 	data_stack* arg_stack;
@@ -105,13 +106,20 @@ int main(int argc, char* argv[]) {
 		fclose(args);
 	} else {
 		for (i = argc - 1; i >= optind; --i) {
-			arg = strtol(argv[i], &check, 0);
-			if (*check != '\0') {
-				fprintf(stderr, "%s: invalid integer argument -- '%s'\n", argv[0], argv[i]);
-				if (source != stdin) fclose(source);
-				return 1;
+			if (ascii_in) {
+				for (j = strlen(argv[i]); j > 0; --j) {
+					arg_stack = data_stack_push(arg_stack, (long) argv[i][j]);
+				}
+				if (i != optind) arg_stack = data_stack_push(arg_stack, (long) ' ');
+			} else {
+				arg = strtol(argv[i], &check, 0);
+				if (*check != '\0') {
+					fprintf(stderr, "%s: invalid integer argument -- '%s'\n", argv[0], argv[i]);
+					if (source != stdin) fclose(source);
+					return 1;
+				}
+				arg_stack = data_stack_push(arg_stack, arg);
 			}
-			arg_stack = data_stack_push(arg_stack, arg);
 		}
 	}
 
