@@ -76,7 +76,33 @@ int main(int argc, char* argv[]) {
 		++optind;
 	}
 	if (arg_file != NULL) {
-		//arg_stack = read_args_from_file(arg_file);
+		args = fopen(arg_file, "r");
+		if (!args) {
+			fprintf(stderr, "%s: %s -- '%s'", argv[0], strerror(errno), arg_file);
+			if (source != stdin) fclose(source);
+			return errno;
+		}
+		if (ascii_in) {
+			fseek(args, 0L, SEEK_END);
+			while (fseek(args, -1L, SEEK_CUR) == 0) {
+				arg = (long) fgetc(args);
+				arg_stack = data_stack_push(arg_stack, arg);
+			}
+			// fseek sets errno to EINVAL when the offset would go negative
+			errno = 0;
+		} else {
+			while (!feof(args)) {
+				if (!fscanf(args, " %li ", &arg)) {
+					fprintf(stderr, "%s: invalid integer argument in argument file -- %s\n", argv[0], arg_file);
+					fclose(args);
+					if (source != stdin) fclose(source);
+					return 1;
+				}
+				arg_stack = data_stack_push(arg_stack, arg);
+			}
+			arg_stack = data_stack_reverse(arg_stack);
+		}
+		fclose(args);
 	} else {
 		for (i = argc - 1; i >= optind; --i) {
 			arg = strtol(argv[i], &check, 0);
