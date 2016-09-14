@@ -6,7 +6,7 @@ all: craneflak
 craneflak: $(objects)
 	$(CC) -o craneflak $(objects) $(CFLAGS)
 
-main.o: main.c
+main.o: main.c stack.h
 	$(CC) -c main.c $(CFLAGS)
 
 stack.o: stack.h stack.c
