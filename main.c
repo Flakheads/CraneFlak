@@ -26,7 +26,7 @@ void print_help_string(char* prog) {
 }
 
 int main(int argc, char* argv[]) {
-	FILE* source, args;
+	FILE* source, *args;
 	uint8_t ascii_in = 0, ascii_out = 0;
 	int argind, i;
 	long arg;
