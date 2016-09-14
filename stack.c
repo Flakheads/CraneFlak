@@ -28,6 +28,17 @@ data_stack* data_stack_pop(data_stack* stack) {
 	return new_top;
 }
 
+data_stack* data_stack_reverse(data_stack* stack) {
+	data_stack* next, *prev = NULL;
+	while(stack != NULL) {
+		next = stack->next;
+		stack->next = prev;
+		prev = stack;
+		stack = next;
+	}
+	return prev;
+}
+
 void data_stack_free(data_stack* stack) {
 	while (stack) stack = data_stack_pop(stack);
 }
