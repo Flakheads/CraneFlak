@@ -1,5 +1,5 @@
 CFLAGS = -Wall
-objects = main.o stack.o
+objects = main.o stack.o interpreter.o
 
 all: craneflak
 
@@ -11,6 +11,9 @@ main.o: main.c stack.h
 
 stack.o: stack.h stack.c
 	$(CC) -c stack.c $(CFLAGS)
+
+interpreter.o: interpreter.h interpreter.c stack.h
+	$(CC) -c interpreter.c $(CFLAGS)
 
 debug: CFLAGS += -g -O0
 debug: craneflak
