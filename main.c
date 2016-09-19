@@ -5,6 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "interpreter.h"
 #include "stack.h"
 
 void print_help_string(char* prog) {
@@ -28,11 +29,12 @@ void print_help_string(char* prog) {
 int main(int argc, char* argv[]) {
 	FILE* source, *args;
 	uint8_t ascii_in = 0, ascii_out = 0;
-	int i;
+	int i, interp_err;
 	unsigned j;
 	long long arg;
 	char c, *arg_file = NULL, *program = NULL, *check;
-	data_stack* arg_stack;
+	data_stack* arg_stack, *result_stack;
+	interpreter* interp;
 	while ((c = getopt(argc, argv, "+aAcef:hv")) != -1) {
 		switch (c) {
 			case 'a':
@@ -122,9 +124,25 @@ int main(int argc, char* argv[]) {
 			}
 		}
 	}
-
-	// Stuff
-
+	interp = interpreter_new(source, arg_stack, NULL);
+	interp_err = interpreter_run(interp);
+	if (interp_err) {
+		// TODO make human readable error messages
+		fprintf(stderr, "Interpreter error %d\n", interp_err);
+		interpreter_free(interp);
+		if (source != stdin) fclose(source);
+		return interp_err;
+	}
+	result_stack = interpreter_remove_active_stack(interp);
+	while (result_stack) {
+		if (ascii_out) {
+			printf("%c", (char) (data_stack_peek(result_stack) % 256));
+		} else {
+			printf("%lld\n", data_stack_peek(result_stack));
+		}
+		result_stack = data_stack_pop(result_stack);
+	}
+	interpreter_free(interp);
 	if (source != stdin) {
 		fclose(source);
 	}
