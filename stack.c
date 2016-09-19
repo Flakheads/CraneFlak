@@ -19,6 +19,10 @@ long long data_stack_peek(data_stack* stack) {
 	return stack ? stack->value : 0;
 }
 
+long long data_stack_height(data_stack* stack) {
+	return stack ? stack->height : 0;
+}
+
 data_stack* data_stack_pop(data_stack* stack) {
 	data_stack* new_top;
 	if (!stack) return NULL;

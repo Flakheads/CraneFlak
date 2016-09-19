@@ -7,6 +7,8 @@ data_stack* data_stack_push(data_stack* stack, long long value);
 
 long long data_stack_peek(data_stack* stack);
 
+long long data_stack_height(data_stack* stack);
+
 data_stack* data_stack_pop(data_stack* stack);
 
 data_stack* data_stack_reverse(data_stack* stack);
