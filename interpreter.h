@@ -7,7 +7,7 @@
 
 typedef struct interpreter interpreter;
 
-void interpreter_init(interpreter* interp, FILE* source, data_stack* on, data_stack* off);
+interpreter* interpreter_new(FILE* source, data_stack* on, data_stack* off);
 
 int interpreter_run(interpreter* interp);
 
