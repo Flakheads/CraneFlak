@@ -18,7 +18,7 @@ void print_help_string(char* prog) {
 					"  -c          Convert arguments to their ASCII codepoint values and convert\n"
 	                "                output to ASCII text, modding by 256 before doing so. This\n"
 	                "                overrides previous -a and -A flags.\n"
-	                "  -e program  Runs the specified program instead of reading from the source file.\n"
+	                "  -e program  Runs specified program instead of reading from the source file.\n"
 	                "  -f file     Read arguments for Brain-Flak program from the specified file,\n"
 	                "                ignore arguments from command line.\n"
 	                "  -h          Display this information.\n"
