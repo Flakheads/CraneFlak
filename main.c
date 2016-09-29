@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
 	char c, *arg_file = NULL, *program = NULL, *check;
 	data_stack* arg_stack, *result_stack;
 	interpreter* interp;
-	while ((c = getopt(argc, argv, "+aAcef:hv")) != -1) {
+	while ((c = getopt(argc, argv, "+aAce:f:hv")) != -1) {
 		switch (c) {
 			case 'a':
 				ascii_in  = 1;
