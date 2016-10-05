@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
 	char c, *arg_file = NULL, *program = NULL, *check;
 	data_stack* arg_stack = NULL, *result_stack;
 	interpreter* interp;
-	while ((c = getopt(argc, argv, "+aAce:f:hv")) != -1) {
+	while ((c = getopt(argc, argv, "+aAce:f:hv0123456789")) != -1) {
 		switch (c) {
 			case 'a':
 				ascii_in  = 1;
@@ -64,8 +64,20 @@ int main(int argc, char* argv[]) {
 			case '?':
 				fprintf(stderr, "Try '%s -h' for more information.\n", argv[0]);
 				return 1;
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
+				goto end_opt_loop;
 		}
 	}
+end_opt_loop:
 	if (program != NULL) {
 		source = fmemopen(program, strlen(program), "r");
 	} else if (optind == argc) {
