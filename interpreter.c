@@ -226,6 +226,7 @@ int interpreter_run(interpreter* interp) {
 					// error
 				}
 				next = 0;
+				--curly_depth;
 			} else if (last) {
 				interp->scope = scope_stack_push(interp->scope, interp->current_value, last, last_index);
 				interp->current_value = 0;
