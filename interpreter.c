@@ -220,14 +220,6 @@ int interpreter_run(interpreter* interp) {
 				interp->scope = scope_stack_pop(interp->scope);
 			}
 		} else if (is_open_brace(next)) {
-			// this tells the program to start storing code in buffer
-			if (next == '{') {
-					if (interp->buf_len == -1) {
-						interp->buf_offset = interp->index + 1;
-						interp->buf_len = 0;
-					}
-					++curly_depth;
-			}
 			if (last == '{' && !data_stack_peek(*interp->active_stack)) {
 				if (interpreter_skip_loop(interp, next) != 0) {
 					fprintf(stderr, "Error5\n");
@@ -237,6 +229,14 @@ int interpreter_run(interpreter* interp) {
 			} else if (last) {
 				interp->scope = scope_stack_push(interp->scope, interp->current_value, last, last_index);
 				interp->current_value = 0;
+			}
+			// this tells the program to start storing code in buffer
+			if (next == '{') {
+					if (interp->buf_len == -1) {
+						interp->buf_offset = interp->index + 1;
+						interp->buf_len = 0;
+					}
+					++curly_depth;
 			}
 			last = next;
 			last_index = interp->index;
