@@ -21,7 +21,11 @@ scope_stack* scope_stack_push(scope_stack* stack, long long current_value, char 
 }
 
 scope_stack* scope_stack_pop(scope_stack* stack) {
-	return stack ? stack->next : NULL;
+	scope_stack* new_top;
+	if (!stack) return NULL;
+	new_top = stack->next;
+	free(stack);
+	return new_top;
 }
 
 void scope_stack_free(scope_stack* stack) {
