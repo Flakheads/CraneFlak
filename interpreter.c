@@ -55,6 +55,7 @@ interpreter* interpreter_new(FILE* source, data_stack* on, data_stack* off) {
 	interp->data[1] = off;
 	interp->active_stack = interp->data;
 	interp->current_value = 0;
+	interp->status = 0;
 	return interp;
 }
 
@@ -137,6 +138,7 @@ int interpreter_run(interpreter* interp) {
 	unsigned curly_depth = 0;
 	long last_index = -1;
 	char next, last = 0;
+	if (interp->status != 0) return interp->status;
 	while(!feof(interp->source)) {
 		next = interpreter_getc(interp);
 		if (is_matching_brace(last, next)) { // nilads
@@ -163,22 +165,26 @@ int interpreter_run(interpreter* interp) {
 					}
 					break;
 				default:
-					fprintf(stderr, "Error0\n");
 					// should never happen but erroring here helps with debugging
+					interp->status = -1;
+					return interp->status;
 			}
 			last = 0;
 		} else if (is_close_brace(next)) {
 			if (last) {
-				fprintf(stderr, "Error1\n");
-				// error mismatched braces
+				// error: mismatched braces
+				interp->status = 1;
+				return interp->status;
 			}
 			if (!interp->scope) {
-				fprintf(stderr, "Error2\n");
-				// error unmatched closing brace
+				// error: unmatched closing brace
+				interp->status = 2;
+				return interp->status;
 			}
 			if (!is_matching_brace(interp->scope->symbol, next)) {
-				fprintf(stderr, "Error3\n");
-				// error mismatched braces
+				// error: mismatched braces
+				interp->status = 1;
+				return interp->status;
 			}
 			switch(next) {
 				case ')':
@@ -203,8 +209,9 @@ int interpreter_run(interpreter* interp) {
 					}
 					break;
 				default:
-					fprintf(stderr, "Error4\n");
 					// should never happen but erroring here may help with debugging
+					interp->status = -2;
+					return interp->status;
 			}
 			if (next != '}' || !data_stack_peek(*interp->active_stack)) {
 				interp->current_value += interp->scope->current_value;
@@ -217,9 +224,9 @@ int interpreter_run(interpreter* interp) {
 					interp->buf_len = -1;
 				}
 				if ((interp->status = interpreter_skip_loop(interp, next)) != 0) {
+					// error: various errors in skip loop
 					interp->status += 4;
-					fprintf(stderr, "Error %d\n", interp->status);
-					// error
+					return interp->status;
 				}
 				next = 0;
 			} else if (last) {
@@ -241,7 +248,9 @@ int interpreter_run(interpreter* interp) {
 	}
 	if (last || interp->scope) {
 		fprintf(stderr, "Error6\n");
-		// error
+		// error: unmatched opening brace(s)
+		interp->status = 3;
+		return interp->status;
 	}
 	return 0;
 }
