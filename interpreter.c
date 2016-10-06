@@ -98,47 +98,38 @@ int interpreter_getc(interpreter* interp) {
 }
 
 int interpreter_skip_loop(interpreter* interp, char first) {
-	int c = first, paren_scope = 0, squar_scope = 0, curly_scope = 1, angle_scope = 0, first_iter = 1;
-	while (curly_scope != 0) {
+	char* buf;
+	int c = first, first_iter = 1;
+	long buf_size = 4, buf_pos = 0;
+	buf = (char*) malloc(sizeof(char)*buf_size);
+	buf[0] = '{';
+	while (buf_pos >= 0) {
 		if (!first_iter) {
-			if (feof(interp->source)) {
-				return 1;
-			}
+			++interp->index;
 			c = interpreter_getc(interp);
 		}
 		first_iter = 0;
-		switch (c) {
-			case '(':
-				++paren_scope;
-				break;
-			case ')':
-				--paren_scope;
-				break;
-			case '[':
-				++squar_scope;
-				break;
-			case ']':
-				--squar_scope;
-				break;
-			case '{':
-				++curly_scope;
-				break;
-			case '}':
-				--curly_scope;
-				break;
-			case '<':
-				++angle_scope;
-				break;
-			case '>':
-				--angle_scope;
-				break;
-			case EOF:
-				return 1;
+		if (c == EOF) {
+			free(buf);
+			// error: unmatched opening brace(s)
+			return 3;
 		}
-		++interp->index;
-		if (paren_scope < 0 || squar_scope < 0 || angle_scope < 0) return 1;
+		if (is_open_brace(c)) {
+			++buf_pos;
+			if (buf_pos == buf_size) {
+				buf_size *= 2;
+				buf = (char*) realloc(buf, sizeof(char)*buf_size);
+			}
+			buf[buf_pos] = c;
+		} else if (is_matching_brace(buf[buf_pos], c)) {
+			--buf_pos;
+		} else if (is_close_brace(c)) {
+			// error: mismatched braces
+			free(buf);
+			return 1;
+		}
 	}
-	if (paren_scope || squar_scope || angle_scope) return 1;
+	free(buf);
 	return 0;
 }
 
@@ -221,12 +212,16 @@ int interpreter_run(interpreter* interp) {
 			}
 		} else if (is_open_brace(next)) {
 			if (last == '{' && !data_stack_peek(*interp->active_stack)) {
-				if (interpreter_skip_loop(interp, next) != 0) {
-					fprintf(stderr, "Error5\n");
+				--curly_depth;
+				if (curly_depth == 0) {
+					interp->buf_len = -1;
+				}
+				if ((interp->status = interpreter_skip_loop(interp, next)) != 0) {
+					interp->status += 4;
+					fprintf(stderr, "Error %d\n", interp->status);
 					// error
 				}
 				next = 0;
-				--curly_depth;
 			} else if (last) {
 				interp->scope = scope_stack_push(interp->scope, interp->current_value, last, last_index);
 				interp->current_value = 0;
