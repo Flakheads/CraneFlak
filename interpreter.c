@@ -247,7 +247,6 @@ int interpreter_run(interpreter* interp) {
 		++interp->index;
 	}
 	if (last || interp->scope) {
-		fprintf(stderr, "Error6\n");
 		// error: unmatched opening brace(s)
 		interp->status = 3;
 		return interp->status;
