@@ -8,6 +8,7 @@ Some differencs from the Ruby version:
 * Programs can be read from stdin or provided to the interpreter via a command line flag.
 	Programs can also be read from a file like in the Ruby Brain-Flak interpreter
 * Requires code in skipped loops to be valid Brain-Flak
+* Accurate character positions in error messages
 * No debug flags (yet...)
 * Less specific error messages (not for long...)
 * No unicode support (yet...)
