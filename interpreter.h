@@ -9,6 +9,8 @@ typedef struct interpreter interpreter;
 
 interpreter* interpreter_new(FILE* source, data_stack* on, data_stack* off);
 
+int interpreter_print_status(interpreter* interp, FILE* out);
+
 int interpreter_run(interpreter* interp);
 
 // When this method is called the active stack is set to NULL in the interpreter to avoid potential memory problems

@@ -59,6 +59,55 @@ interpreter* interpreter_new(FILE* source, data_stack* on, data_stack* off) {
 	return interp;
 }
 
+int interpreter_print_status(interpreter* interp, FILE* out) {
+	long index = interp->index + 1;
+	scope_stack* scope;
+	switch (interp->status) {
+		case 0:
+			fprintf(out, "Execution successful!\n");
+			break;
+		case -1:
+			fprintf(out, "interpreter bug -- nilad parser (char %ld)\n", index);
+			break;
+		case -2:
+			fprintf(out, "interpreter bug -- end monad parser (char %ld)\n", index);
+			break;
+		case 1:
+			fprintf(out, "mismatched braces -- at %ld and %ld\n", interp->scope->index + 1, index);
+			break;
+		case 2:
+			fprintf(out, "unmatched close brace -- at %ld\n", index);
+			break;
+		case 3:
+			fprintf(out, "unmatched open brace(s) -- some at %ld", interp->scope->index + 1);
+			scope = interp->scope->next;
+			while (scope) {
+				fprintf(out, ", at %ld", scope->index + 1);
+				scope = scope->next;
+			}
+			fprintf(out, "\n");
+			break;
+		case 4:
+			fprintf(out, "adjacent mismatched braces -- closes at %ld\n", index);
+			break;
+		case 5:
+			fprintf(out, "mismatched braces in skipped loop -- close brace at %ld\n", index);
+			break;
+		case 7:
+			fprintf(out, "unmatched open brace(s) while skipping loop -- some at %ld", interp->buf_offset);
+			scope = interp->scope;
+			while (scope) {
+				fprintf(out, ", at %ld", scope->index + 1);
+				scope = scope->next;
+			}
+			fprintf(out, "\n");
+			break;
+		default:
+			fprintf(out, "unrecognized error -- %d\n", interp->status);
+	}
+	return interp->status;
+}
+
 int is_open_brace(char c) {
 	return c == '(' || c == '[' || c == '{' || c == '<';
 }
@@ -142,14 +191,14 @@ int interpreter_run(interpreter* interp) {
 	while(!feof(interp->source)) {
 		next = interpreter_getc(interp);
 		if (is_matching_brace(last, next)) { // nilads
-			switch (last) {
-				case '(':
+			switch (next) {
+				case ')':
 					++interp->current_value;
 					break;
-				case '[':
+				case ']':
 					interp->current_value += data_stack_height(*interp->active_stack);
 					break;
-				case '{':
+				case '}':
 					interp->current_value += data_stack_peek(*interp->active_stack);
 					*interp->active_stack = data_stack_pop(*interp->active_stack);
 					--curly_depth;
@@ -157,7 +206,7 @@ int interpreter_run(interpreter* interp) {
 						interp->buf_len = -1;
 					}
 					break;
-				case '<':
+				case '>':
 					if (interp->active_stack == interp->data) {
 						interp->active_stack = interp->data + 1;
 					} else {
@@ -173,7 +222,7 @@ int interpreter_run(interpreter* interp) {
 		} else if (is_close_brace(next)) {
 			if (last) {
 				// error: mismatched braces
-				interp->status = 1;
+				interp->status = 4;
 				return interp->status;
 			}
 			if (!interp->scope) {

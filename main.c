@@ -139,8 +139,13 @@ end_opt_loop:
 	interp = interpreter_new(source, arg_stack, NULL);
 	interp_err = interpreter_run(interp);
 	if (interp_err) {
-		// TODO make human readable error messages
-		fprintf(stderr, "Interpreter error %d\n", interp_err);
+		fprintf(stderr, "%s: ", argv[0]);
+		interpreter_print_status(interp, stderr);
+		if (interp_err < 0) {
+			fprintf(stderr, "This error is the result of a interpreter bug, not an error in the input program. "
+			                "Please ensure you are using the latest version of the interpreter. "
+							"If you are then please let us know by submitting an issue at https://github.com/1000000000/CraneFlak/issues.\n");
+		}
 		interpreter_free(interp);
 		if (source != stdin) fclose(source);
 		return interp_err;
