@@ -8,6 +8,8 @@
 #include "interpreter.h"
 #include "stack.h"
 
+const char CRANEFLAK_VERSION[] = "1.0.0";
+
 void print_help_string(char* prog) {
 	fprintf(stderr, "Usage: %s [switches] [--] [programfile] [arguments]\n"
 	                "  -a          Convert arguments to their ASCII codepoint values and output in\n"
@@ -59,7 +61,7 @@ int main(int argc, char* argv[]) {
 				print_help_string(argv[0]);
 				return 0;
 			case 'v':
-				fprintf(stderr, "CraneFlak version 1.0.0 DEV\n");
+				fprintf(stderr, "CraneFlak version %s\n", CRANEFLAK_VERSION);
 				return 0;
 			case '?':
 				fprintf(stderr, "Try '%s -h' for more information.\n", argv[0]);

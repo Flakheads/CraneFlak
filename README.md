@@ -9,6 +9,7 @@ Some differencs from the Ruby version:
 	Programs can also be read from a file like in the Ruby Brain-Flak interpreter
 * Requires code in skipped loops to be valid Brain-Flak
 * No debug flags (yet...)
+* Less specific error messages (not for long...)
 * No unicode support (yet...)
-* No reverse flag (yet...?)
+* No reverse flag (yet...)
 * Values overflow above `LLONG_MAX` and underflow below `LLONG_MIN`
