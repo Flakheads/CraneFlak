@@ -79,8 +79,10 @@ int main(int argc, char* argv[]) {
 				goto end_opt_loop;
 		}
 	}
+
 end_opt_loop:
-	if (program != NULL) {
+
+	if (program) {
 		source = fmemopen(program, strlen(program), "r");
 	} else if (optind == argc) {
 		source = stdin;
@@ -138,8 +140,10 @@ end_opt_loop:
 			}
 		}
 	}
+
 	interp = interpreter_new(source, arg_stack, NULL);
 	interp_err = interpreter_run(interp);
+
 	if (interp_err) {
 		fprintf(stderr, "%s: ", argv[0]);
 		interpreter_print_status(interp, stderr);
@@ -152,7 +156,9 @@ end_opt_loop:
 		if (source != stdin) fclose(source);
 		return interp_err;
 	}
+
 	result_stack = interpreter_remove_active_stack(interp);
+
 	while (result_stack) {
 		if (ascii_out) {
 			printf("%c", (char) (data_stack_peek(result_stack) % 256));
@@ -161,9 +167,12 @@ end_opt_loop:
 		}
 		result_stack = data_stack_pop(result_stack);
 	}
+
 	interpreter_free(interp);
+
 	if (source != stdin) {
 		fclose(source);
 	}
+
 	return 0;
 }
