@@ -55,7 +55,7 @@ interpreter* interpreter_new(FILE* source, data_stack* on, data_stack* off) {
 	interp->data[1] = off;
 	interp->active_stack = interp->data;
 	interp->current_value = 0;
-	interp->status = 0;
+	interp->status = SUCCESS;
 	return interp;
 }
 
@@ -63,22 +63,22 @@ int interpreter_print_status(interpreter* interp, FILE* out) {
 	long index = interp->index + 1;
 	scope_stack* scope;
 	switch (interp->status) {
-		case 0:
+		case SUCCESS:
 			fprintf(out, "Execution successful!\n");
 			break;
-		case -1:
+		case ERR_INTERP_BUG_NILAD:
 			fprintf(out, "interpreter bug -- nilad parser (char %ld)\n", index);
 			break;
-		case -2:
+		case ERR_INTERP_BUG_MONAD:
 			fprintf(out, "interpreter bug -- end monad parser (char %ld)\n", index);
 			break;
-		case 1:
+		case ERR_MISMATCHED_BRACES:
 			fprintf(out, "mismatched braces -- at %ld and %ld\n", interp->scope->index + 1, index);
 			break;
-		case 2:
+		case ERR_UNMATCHED_CLOSE_BRACE:
 			fprintf(out, "unmatched close brace -- at %ld\n", index);
 			break;
-		case 3:
+		case ERR_UNMATCHED_OPEN_BRACE:
 			fprintf(out, "unmatched open brace(s) -- some at %ld", interp->scope->index + 1);
 			scope = interp->scope->next;
 			while (scope) {
@@ -87,13 +87,13 @@ int interpreter_print_status(interpreter* interp, FILE* out) {
 			}
 			fprintf(out, "\n");
 			break;
-		case 4:
+		case ERR_ADJACENT_MISMATCHED_BRACES:
 			fprintf(out, "adjacent mismatched braces -- closes at %ld\n", index);
 			break;
-		case 5:
+		case ERR_MISMATCHED_SKIPPED_LOOP:
 			fprintf(out, "mismatched braces in skipped loop -- close brace at %ld\n", index);
 			break;
-		case 7:
+		case ERR_UNMATCHED_OPEN_BRACES:
 			fprintf(out, "unmatched open brace(s) while skipping loop -- some at %ld", interp->buf_offset);
 			scope = interp->scope;
 			while (scope) {
@@ -161,8 +161,7 @@ int interpreter_skip_loop(interpreter* interp, char first) {
 		first_iter = 0;
 		if (c == EOF) {
 			free(buf);
-			// error: unmatched opening brace(s)
-			return 3;
+			return ERR_UNMATCHED_OPEN_BRACE;
 		}
 		if (is_open_brace(c)) {
 			++buf_pos;
@@ -174,21 +173,24 @@ int interpreter_skip_loop(interpreter* interp, char first) {
 		} else if (is_matching_brace(buf[buf_pos], c)) {
 			--buf_pos;
 		} else if (is_close_brace(c)) {
-			// error: mismatched braces
 			free(buf);
-			return 1;
+			return ERR_MISMATCHED_BRACES;
 		}
 	}
+
 	free(buf);
-	return 0;
+	return SUCCESS;
 }
 
 int interpreter_run(interpreter* interp) {
 	unsigned curly_depth = 0;
 	long last_index = -1;
 	char next, last = 0;
-	if (interp->status != 0) return interp->status;
-	while(!feof(interp->source)) {
+
+	if (interp->status != SUCCESS)
+            return interp->status;
+
+	while (!feof(interp->source)) {
 		next = interpreter_getc(interp);
 		if (is_matching_brace(last, next)) { // nilads
 			switch (next) {
@@ -215,24 +217,21 @@ int interpreter_run(interpreter* interp) {
 					break;
 				default:
 					// should never happen but erroring here helps with debugging
-					interp->status = -1;
+					interp->status = ERR_INTERP_BUG_NILAD;
 					return interp->status;
 			}
 			last = 0;
 		} else if (is_close_brace(next)) {
 			if (last) {
-				// error: mismatched braces
-				interp->status = 4;
+				interp->status = ERR_ADJACENT_MISMATCHED_BRACES;
 				return interp->status;
 			}
 			if (!interp->scope) {
-				// error: unmatched closing brace
-				interp->status = 2;
+				interp->status = ERR_UNMATCHED_CLOSE_BRACE;
 				return interp->status;
 			}
 			if (!is_matching_brace(interp->scope->symbol, next)) {
-				// error: mismatched braces
-				interp->status = 1;
+				interp->status = ERR_MISMATCHED_BRACES;
 				return interp->status;
 			}
 			switch(next) {
@@ -259,7 +258,7 @@ int interpreter_run(interpreter* interp) {
 					break;
 				default:
 					// should never happen but erroring here may help with debugging
-					interp->status = -2;
+					interp->status = ERR_INTERP_BUG_MONAD;
 					return interp->status;
 			}
 			if (next != '}' || !data_stack_peek(*interp->active_stack)) {
@@ -296,8 +295,7 @@ int interpreter_run(interpreter* interp) {
 		++interp->index;
 	}
 	if (last || interp->scope) {
-		// error: unmatched opening brace(s)
-		interp->status = 3;
+		interp->status = ERR_UNMATCHED_OPEN_BRACE;
 		return interp->status;
 	}
 	return 0;
@@ -306,6 +304,7 @@ int interpreter_run(interpreter* interp) {
 data_stack* interpreter_remove_active_stack(interpreter* interp) {
 	data_stack* active_stack = *interp->active_stack;
 	*interp->active_stack = NULL;
+
 	return active_stack;
 }
 
@@ -313,9 +312,10 @@ void interpreter_free(interpreter* interp) {
 	scope_stack_free(interp->scope);
 	data_stack_free(interp->data[0]);
 	data_stack_free(interp->data[1]);
+
 	if (interp->buf_size > 0) {
 		free(interp->buf);
 	}
+
 	free(interp);
 }
-
