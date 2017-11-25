@@ -187,8 +187,9 @@ int interpreter_run(interpreter* interp) {
 	long last_index = -1;
 	char next, last = 0;
 
-	if (interp->status != SUCCESS)
+	if (interp->status != SUCCESS) {
             return interp->status;
+	}
 
 	while (!feof(interp->source)) {
 		next = interpreter_getc(interp);

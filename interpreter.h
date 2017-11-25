@@ -2,6 +2,7 @@
 #define __interpreter_h_
 
 #include <stdio.h>
+
 #include "stack.h"
 
 enum {
@@ -29,4 +30,4 @@ data_stack* interpreter_remove_active_stack(interpreter* interp);
 
 void interpreter_free(interpreter* interp);
 
-#endif //__interpreter_h_
+#endif//__interpreter_h_
